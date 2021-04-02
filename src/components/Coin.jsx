@@ -38,7 +38,12 @@ class Coin extends Component {
     this.timer();
   }
   componentWillUnmount() {
-    if (this.setState.intervalId) clearInterval(this.state.intervalId);
+    this.cancelSetState = true;
+    if (this.state.intervalId) {
+      clearInterval(this.state.intervalId);
+      console.log("cleared1");
+    }
+    console.log("cleared2");
   }
 
   async timer() {
@@ -59,6 +64,10 @@ class Coin extends Component {
         6
       ),
     ]);
+
+    if (this.cancelSetState) {
+      return;
+    }
 
     //price converison from WETH to USDT
     if (this.props.coin.addr1 === "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2")
@@ -85,6 +94,9 @@ class Coin extends Component {
         },
       }
     );
+    if (this.cancelSetState) {
+      return;
+    }
 
     this.setState({
       gateAskPrice: gateioData.data.asks[0][0],
