@@ -86,7 +86,7 @@ class Coin extends Component {
           }
         },
         (err) => {
-          console.log("err2", err);
+          console.log("err3", err);
         }
       );
 
@@ -130,7 +130,7 @@ class Coin extends Component {
       new Notification(
         "bid price of " +
           this.props.coin.gatePair +
-          " is bigger by " +
+          " is higher by " +
           this.state.bidDiff.toFixed(2) +
           "%"
       );
