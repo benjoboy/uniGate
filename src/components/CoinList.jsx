@@ -3,19 +3,21 @@ import Add from "./Add";
 import Coin from "./Coin";
 import Axios from "axios";
 import uniswapPrice from "uniswap-price";
+import { v4 as uuidv4 } from "uuid";
 
 class CoinList extends Component {
   constructor() {
     super();
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
   }
 
   state = {
     coinList: [],
     addr1: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     addr2: "0x8a40c222996f9f3431f63bf80244c36822060f12",
-    interval: 5,
+    interval: 30,
     priceDifference: 5,
     gatePair: "fxf_usdt",
   };
@@ -36,13 +38,13 @@ class CoinList extends Component {
 
   handleSubmit(event) {
     event.preventDefault();
-    console.log("change!");
     var coin = {
       interval: this.state.interval,
       priceDifference: this.state.priceDifference,
       addr1: this.state.addr1,
       addr2: this.state.addr2,
       gatePair: this.state.gatePair,
+      id: uuidv4(),
     };
 
     uniswapPrice
@@ -83,12 +85,19 @@ class CoinList extends Component {
     //this.setState({ coinList: this.state.coinList.push(coin) });
   }
 
+  handleDelete(id) {
+    const list = this.state.coinList.filter((x) => {
+      return x.id !== id;
+    });
+
+    this.setState({ coinList: list });
+  }
+
   render() {
-    console.log(this.state.addr1);
-    var lists = this.state.coinList.map(function (coin, index) {
+    var lists = this.state.coinList.map((coin) => {
       return (
-        <div key={index}>
-          <Coin coin={coin} />
+        <div key={coin.id}>
+          <Coin coin={coin} handleDelete={this.handleDelete} />
         </div>
       );
     });

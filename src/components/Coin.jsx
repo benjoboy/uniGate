@@ -38,10 +38,11 @@ class Coin extends Component {
     this.timer();
   }
   componentWillUnmount() {
-    clearInterval(this.state.intervalId);
+    if (this.setState.intervalId) clearInterval(this.state.intervalId);
   }
 
   async timer() {
+    console.log("timer");
     //get uniswipe prices
     const [data1, data2] = await Promise.all([
       // eslint-disable-next-line
@@ -145,6 +146,13 @@ class Coin extends Component {
           <b>Gate.io</b> bidPrice: {this.state.gateBidPrice}{" "}
           {this.state.bidDiff.toFixed(2)}%
         </label>
+        <br />
+        <button
+          className="btn btn-primary"
+          onClick={() => this.props.handleDelete(this.props.coin.id)}
+        >
+          Remove
+        </button>
       </div>
     );
   }
