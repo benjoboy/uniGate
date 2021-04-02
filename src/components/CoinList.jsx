@@ -28,6 +28,7 @@ class CoinList extends Component {
     } else {
       Notification.requestPermission();
     }
+    this.setState({ coinList: JSON.parse(localStorage.getItem("CoinList")) });
   }
 
   handleChange(event) {
@@ -66,11 +67,19 @@ class CoinList extends Component {
           }).then(
             (res) => {
               console.log("xoin", res);
-              this.setState((previousState) => {
-                return {
-                  coinList: [...previousState.coinList, coin],
-                };
-              });
+              this.setState(
+                (previousState) => {
+                  return {
+                    coinList: [...previousState.coinList, coin],
+                  };
+                },
+                () => {
+                  window.localStorage.setItem(
+                    "CoinList",
+                    JSON.stringify(this.state.coinList)
+                  );
+                }
+              );
             },
             (err) => {
               console.log("error with GateIO pair", err);
@@ -90,7 +99,13 @@ class CoinList extends Component {
       return x.id !== id;
     });
 
-    this.setState({ coinList: list });
+    this.setState({ coinList: list }, () => {
+      console.log(this.state.coinList);
+      window.localStorage.setItem(
+        "CoinList",
+        JSON.stringify(this.state.coinList)
+      );
+    });
   }
 
   render() {
