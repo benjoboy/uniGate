@@ -15,7 +15,7 @@
     "uuid": "^8.3.2",
     "web-vitals": "^1.1.1"
   },
-  "proxy": "https://api.gateio.ws",
+  "proxy": "https://api.gateio.ws/",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

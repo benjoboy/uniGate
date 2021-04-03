@@ -41,13 +41,10 @@ class Coin extends Component {
     this.cancelSetState = true;
     if (this.state.intervalId) {
       clearInterval(this.state.intervalId);
-      console.log("cleared1");
     }
-    console.log("cleared2");
   }
 
   async timer() {
-    console.log("timer");
     //get uniswipe prices
     const [data1, data2] = await Promise.all([
       // eslint-disable-next-line
@@ -141,7 +138,7 @@ class Coin extends Component {
   render() {
     return (
       <div className="col-md-12 ">
-        <label>{this.props.coin.gatePair}</label>
+        <label>{this.props.coin.gatePair.toUpperCase()}</label>
         <br />
         <label>
           <b>Uniswap</b> wethPrice: {this.state.uniWethPrice} &nbsp; usdtPrice:{" "}
