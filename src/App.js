@@ -11,6 +11,19 @@ const theme = createTheme({
   palette: {
     mode: "dark",
   },
+  components: {
+    MuiButton: {
+      variants: [
+        {
+          props: { variant: 'white' },
+          style: {
+            textTransform: 'none',
+            border: `1px solid white`,
+          },
+        },
+      ],
+    },
+  },
 })
 
 function App() {
@@ -18,8 +31,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container
-        size="xl"
-        style={{ height: "100vh", backgroundColor: theme.backgroundColor }}
+        size='xl'
       >
         <CoinList />
       </Container>

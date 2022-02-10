@@ -56,19 +56,17 @@ export const CoinList = () => {
 
   const lists = coinList.map((coin) => {
     return (
-      <div key={coin.id}>
         <Coin key={coin.id} coin={coin} handleDelete={handleDelete} />
-      </div>
     )
   })
 
   return (
-    <div>
-      <Box my={4}>
+    <>
+      <Box my={4} display='flex' justifyContent='space-between'>
         <Typography variant="h3">UniGate</Typography>
+        <Add handleAdd={handleSubmit} handleDelete={handleDelete} />
       </Box>
-      <Add handleAdd={handleSubmit} handleDelete={handleDelete} />
-      <Grid container>{lists}</Grid>
-    </div>
+      <Grid container justifyContent='start' spacing={3}  mt={5} >{lists}</Grid>
+    </>
   )
 }

@@ -1,4 +1,5 @@
-import { Grid, Paper } from "@mui/material"
+import {  Button, Grid, Paper, Typography } from "@mui/material"
+import { Box } from "@mui/system"
 import axios from "axios"
 import { useEffect, useState } from "react"
 import uniswapPrice from "uniswap-price"
@@ -12,7 +13,6 @@ export const Coin = ({ coin, handleDelete }) => {
   const [bidDiff, setBidDiff] = useState(0)
 
   const timer = async () => {
-    console.log("timer")
     //get uniswipe prices
     try {
       let decimals
@@ -100,29 +100,32 @@ export const Coin = ({ coin, handleDelete }) => {
   }, [coin.interval, timer])
 
   return (
-    <Grid item style={{ border: "1px solid red" }} padding={5}>
-      <Paper elevation={4} padding={5}>
-        <label>{coin.gatePair.toUpperCase()}</label>
-        <br />
-        <label>
-          <b>Uniswap</b> wethPrice: {uniWethPrice} &nbsp; usdtPrice:{" "}
-          {Number(uniUsdtPrice).toFixed(4)}
-        </label>
-        <br />
-        <label>
-          <b>Gate.io</b> askPrice: {gateAskPrice} {askDiff.toFixed(2)}%
-        </label>
-        <br />
-        <label>
-          <b>Gate.io</b> bidPrice: {gateBidPrice} {bidDiff.toFixed(2)}%
-        </label>
-        <br />
-        <button
-          className="btn btn-primary"
-          onClick={() => handleDelete(coin.id)}
-        >
-          Remove
-        </button>
+    <Grid item xs={4} >
+      <Paper elevation={3}>
+        <Box padding={4} >
+          <Typography variant='h6'>{coin.gatePair.toUpperCase()}</Typography>
+          <Box my={3}>
+            <label>
+              <b>Uniswap</b> wethPrice: {uniWethPrice} &nbsp; usdtPrice:{" "}
+              {Number(uniUsdtPrice).toFixed(4)}
+            </label>
+            <br />
+            <label>
+              <b>Gate.io</b> askPrice: {gateAskPrice} {askDiff.toFixed(2)}%
+            </label>
+            <br />
+            <label>
+              <b>Gate.io</b> bidPrice: {gateBidPrice} {bidDiff.toFixed(2)}%
+            </label>
+          </Box>
+          <Button
+              size='large'
+              variant='white'
+            onClick={() => handleDelete(coin.id)}
+          >
+            Remove
+          </Button>
+        </Box>
       </Paper>
     </Grid>
   )
