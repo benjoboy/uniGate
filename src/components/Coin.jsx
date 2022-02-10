@@ -1,11 +1,11 @@
-import React, { Component } from "react";
-import uniswapPrice from "uniswap-price";
-import Axios from "axios";
+import React, { Component } from "react"
+import uniswapPrice from "uniswap-price"
+import Axios from "axios"
 
 class Coin extends Component {
   constructor() {
-    super();
-    this.timer = this.timer.bind(this);
+    super()
+    this.timer = this.timer.bind(this)
   }
   state = {
     intervalId: 0,
@@ -16,31 +16,31 @@ class Coin extends Component {
     askDiff: 0,
     bidDiff: 0,
     decimals: 18,
-  };
+  }
 
   componentDidMount() {
-    var intervalId = setInterval(this.timer, this.props.coin.interval * 1000);
-    this.setState({ intervalId: intervalId });
+    var intervalId = setInterval(this.timer, this.props.coin.interval * 1000)
+    this.setState({ intervalId: intervalId })
 
     if (
       this.props.coin.addr1 === "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
     ) {
       this.setState({
         decimals: 18,
-      });
+      })
     } else if (
       this.props.coin.addr1 === "0xdac17f958d2ee523a2206206994597c13d831ec7"
     ) {
       this.setState({
         decimals: 6,
-      });
+      })
     }
-    this.timer();
+    this.timer()
   }
   componentWillUnmount() {
-    this.cancelSetState = true;
+    this.cancelSetState = true
     if (this.state.intervalId) {
-      clearInterval(this.state.intervalId);
+      clearInterval(this.state.intervalId)
     }
   }
 
@@ -61,10 +61,10 @@ class Coin extends Component {
           "0xdac17f958d2ee523a2206206994597c13d831ec7", // usdt 0xdac17f958d2ee523a2206206994597c13d831ec7
           6
         ),
-      ]);
+      ])
 
       if (this.cancelSetState) {
-        return;
+        return
       }
 
       //price converison from WETH to USDT
@@ -74,12 +74,12 @@ class Coin extends Component {
         this.setState({
           uniUsdtPrice: data1.quote2base * data2.base2quote,
           uniWethPrice: data1.quote2base,
-        });
+        })
       else {
         this.setState({
           uniUsdtPrice: data1.quote2base,
           uniWethPrice: 0,
-        });
+        })
       }
 
       //get gateio prices
@@ -93,9 +93,9 @@ class Coin extends Component {
             "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
           },
         }
-      );
+      )
       if (this.cancelSetState) {
-        return;
+        return
       }
 
       this.setState({
@@ -109,7 +109,7 @@ class Coin extends Component {
           100 *
           ((gateioData.data.bids[0][0] - this.state.uniUsdtPrice) /
             this.state.uniUsdtPrice),
-      });
+      })
 
       //compare prices
       if (
@@ -122,7 +122,7 @@ class Coin extends Component {
             " is higher by " +
             this.state.bidDiff.toFixed(2) +
             "%"
-        );
+        )
       }
       if (
         this.state.askDiff < -this.props.coin.priceDifference &&
@@ -134,10 +134,10 @@ class Coin extends Component {
             " is lower by " +
             this.state.bidDiff.toFixed(2) +
             "%"
-        );
+        )
       }
     } catch {
-      console.log("error in timer");
+      console.log("error in timer")
     }
   }
 
@@ -169,8 +169,8 @@ class Coin extends Component {
           Remove
         </button>
       </div>
-    );
+    )
   }
 }
 
-export default Coin;
+export default Coin

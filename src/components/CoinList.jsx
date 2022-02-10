@@ -1,137 +1,71 @@
-import React, { Component } from "react";
-import Add from "./Add";
-import Coin from "./Coin";
-import Axios from "axios";
-import uniswapPrice from "uniswap-price";
-import { v4 as uuidv4 } from "uuid";
+import axios from "axios"
+import { useEffect, useState } from "react"
+import uniswapPrice from "uniswap-price"
+import Add from "./Add"
+import { Coin } from "./CoinHook"
 
-class CoinList extends Component {
-  constructor() {
-    super();
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleDelete = this.handleDelete.bind(this);
-  }
+export const CoinList = () => {
+  const [coinList, setCoinList] = useState([])
 
-  state = {
-    coinList: [],
-    addr1: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-    addr2: "0x8a40c222996f9f3431f63bf80244c36822060f12",
-    interval: 30,
-    priceDifference: 5,
-    gatePair: "fxf_usdt",
-  };
-
-  componentDidMount() {
+  useEffect(() => {
     if (!("Notification" in window)) {
-      console.log("This browser does not support desktop notification");
+      console.log("This browser does not support desktop notification")
     } else {
-      Notification.requestPermission();
+      Notification.requestPermission()
     }
-    this.setState({ coinList: JSON.parse(localStorage.getItem("CoinList")) });
-  }
+    const coinListTmp = JSON.parse(localStorage.getItem("CoinList"))
+    if (coinListTmp) setCoinList(coinListTmp)
+  }, [])
 
-  handleChange(event) {
-    this.setState({
-      [event.target.name]: event.target.value,
-    });
-  }
-
-  handleSubmit(event) {
-    event.preventDefault();
-    var coin = {
-      interval: this.state.interval,
-      priceDifference: this.state.priceDifference,
-      addr1: this.state.addr1,
-      addr2: this.state.addr2,
-      gatePair: this.state.gatePair,
-      id: uuidv4(),
-    };
-
-    uniswapPrice
-      .getMidPrice(
-        "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // weth 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
-        18,
-        "0xdac17f958d2ee523a2206206994597c13d831ec7", // usdt 0xdac17f958d2ee523a2206206994597c13d831ec7
-        6
-      )
-      .then(
-        (data) => {
-          console.log(coin.gatePair);
-          Axios.get(`/api/v4/spot/order_book?currency_pair=` + coin.gatePair, {
-            headers: {
-              "Access-Control-Allow-Origin": "*",
-              "Access-Control-Allow-Methods":
-                "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-            },
-          }).then(
-            (res) => {
-              console.log("xoin", res);
-              this.setState(
-                (previousState) => {
-                  return {
-                    coinList: [...previousState.coinList, coin],
-                  };
-                },
-                () => {
-                  window.localStorage.setItem(
-                    "CoinList",
-                    JSON.stringify(this.state.coinList)
-                  );
-                }
-              );
-            },
-            (err) => {
-              console.log("error with GateIO pair", err);
-            }
-          );
+  const handleSubmit = async (coin) => {
+    let decimals
+    if (coin.addr1 === "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2") {
+      decimals = 18
+    } else if (coin.addr1 === "0xdac17f958d2ee523a2206206994597c13d831ec7") {
+      decimals = 6
+    }
+    const ethData = await uniswapPrice.getMidPrice(
+      coin.addr1,
+      decimals,
+      coin.addr2,
+      18
+    )
+    const gateIoData = await axios.get(
+      `/api/v4/spot/order_book?currency_pair=` + coin.gatePair,
+      {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
         },
-        (err) => {
-          console.log("err with uniswap address", err);
-        }
-      );
+      }
+    )
+    console.log(gateIoData)
+    if (gateIoData && ethData) setCoinList((prev) => [...prev, coin])
+  }
+  useEffect(() => {
+    localStorage.setItem("CoinList", JSON.stringify(coinList))
+  }, [coinList])
 
-    //this.setState({ coinList: this.state.coinList.push(coin) });
+  const handleDelete = (id) => {
+    setCoinList((prev) => {
+      const tmpList = prev.filter((coin) => coin.id !== id)
+      return tmpList
+    })
   }
 
-  handleDelete(id) {
-    const list = this.state.coinList.filter((x) => {
-      return x.id !== id;
-    });
-
-    this.setState({ coinList: list }, () => {
-      console.log(this.state.coinList);
-      window.localStorage.setItem(
-        "CoinList",
-        JSON.stringify(this.state.coinList)
-      );
-    });
-  }
-
-  render() {
-    var lists = this.state.coinList.map((coin) => {
-      return (
-        <div key={coin.id}>
-          <Coin coin={coin} handleDelete={this.handleDelete} />
-        </div>
-      );
-    });
+  const lists = coinList.map((coin) => {
     return (
-      <div>
-        <h1>CoinList</h1>
-        <Add
-          addr1={this.state.addr1}
-          addr2={this.state.addr2}
-          interval={this.state.interval}
-          priceDifference={this.state.priceDifference}
-          handleChange={this.handleChange}
-          handleSubmit={this.handleSubmit}
-          gatePair={this.state.gatePair}
-        />
-        <div className="row pt-3">{lists}</div>
+      <div key={coin.id}>
+        <Coin key={coin.id} coin={coin} handleDelete={handleDelete} />
       </div>
-    );
-  }
-}
+    )
+  })
 
-export default CoinList;
+  return (
+    <div>
+      <h1>UniGate</h1>
+      <Add handleAdd={handleSubmit} handleDelete={handleDelete} />
+      <div className="row pt-3">{lists}</div>
+    </div>
+  )
+}
