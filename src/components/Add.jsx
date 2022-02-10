@@ -47,16 +47,6 @@ const Add = ({ handleAdd }) => {
               USDT
             </option>
           </select>
-          {/* <input
-              type="text"
-              className="form-control"
-              id="coinAddress1"
-              placeholder="Coin address 1"
-              required
-              name="addr1"
-              value={this.props.addr1}
-              onChange={(e) => this.props.handleChange(e)}
-            /> */}
         </div>
         <div className="form-group col-md-3">
           <label htmlFor="coinAddress2">Coin address 2</label>

@@ -1,8 +1,9 @@
+import { Box, Grid, Typography } from "@mui/material"
 import axios from "axios"
 import { useEffect, useState } from "react"
 import uniswapPrice from "uniswap-price"
 import Add from "./Add"
-import { Coin } from "./CoinHook"
+import { Coin } from "./Coin"
 
 export const CoinList = () => {
   const [coinList, setCoinList] = useState([])
@@ -63,9 +64,11 @@ export const CoinList = () => {
 
   return (
     <div>
-      <h1>UniGate</h1>
+      <Box my={4}>
+        <Typography variant="h3">UniGate</Typography>
+      </Box>
       <Add handleAdd={handleSubmit} handleDelete={handleDelete} />
-      <div className="row pt-3">{lists}</div>
+      <Grid container>{lists}</Grid>
     </div>
   )
 }

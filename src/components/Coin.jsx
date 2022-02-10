@@ -1,60 +1,29 @@
-import React, { Component } from "react"
+import { Grid, Paper } from "@mui/material"
+import axios from "axios"
+import { useEffect, useState } from "react"
 import uniswapPrice from "uniswap-price"
-import Axios from "axios"
 
-class Coin extends Component {
-  constructor() {
-    super()
-    this.timer = this.timer.bind(this)
-  }
-  state = {
-    intervalId: 0,
-    uniWethPrice: 0,
-    uniUsdtPrice: 0,
-    gateAskPrice: 0,
-    gateBidPrice: 0,
-    askDiff: 0,
-    bidDiff: 0,
-    decimals: 18,
-  }
+export const Coin = ({ coin, handleDelete }) => {
+  const [uniWethPrice, setUniWethPrice] = useState(0)
+  const [uniUsdtPrice, setUniUsdtPrice] = useState(0)
+  const [gateAskPrice, setGateAskPrice] = useState(0)
+  const [gateBidPrice, setGateBidPrice] = useState(0)
+  const [askDiff, setAskDiff] = useState(0)
+  const [bidDiff, setBidDiff] = useState(0)
 
-  componentDidMount() {
-    var intervalId = setInterval(this.timer, this.props.coin.interval * 1000)
-    this.setState({ intervalId: intervalId })
-
-    if (
-      this.props.coin.addr1 === "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-    ) {
-      this.setState({
-        decimals: 18,
-      })
-    } else if (
-      this.props.coin.addr1 === "0xdac17f958d2ee523a2206206994597c13d831ec7"
-    ) {
-      this.setState({
-        decimals: 6,
-      })
-    }
-    this.timer()
-  }
-  componentWillUnmount() {
-    this.cancelSetState = true
-    if (this.state.intervalId) {
-      clearInterval(this.state.intervalId)
-    }
-  }
-
-  async timer() {
+  const timer = async () => {
+    console.log("timer")
     //get uniswipe prices
     try {
+      let decimals
+      if (coin.addr1 === "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2") {
+        decimals = 18
+      } else if (coin.addr1 === "0xdac17f958d2ee523a2206206994597c13d831ec7") {
+        decimals = 6
+      }
       const [data1, data2] = await Promise.all([
         // eslint-disable-next-line
-        uniswapPrice.getMidPrice(
-          this.props.coin.addr1,
-          this.state.decimals,
-          this.props.coin.addr2,
-          18
-        ),
+        uniswapPrice.getMidPrice(coin.addr1, decimals, coin.addr2, 18),
         uniswapPrice.getMidPrice(
           "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", // weth 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
           18,
@@ -63,30 +32,24 @@ class Coin extends Component {
         ),
       ])
 
-      if (this.cancelSetState) {
-        return
-      }
-
+      let uniUsdtPriceTmp
+      let uniWethPriceTmp
       //price converison from WETH to USDT
-      if (
-        this.props.coin.addr1 === "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-      )
-        this.setState({
-          uniUsdtPrice: data1.quote2base * data2.base2quote,
-          uniWethPrice: data1.quote2base,
-        })
-      else {
-        this.setState({
-          uniUsdtPrice: data1.quote2base,
-          uniWethPrice: 0,
-        })
+      if (coin.addr1 === "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2") {
+        uniUsdtPriceTmp = data1.quote2base * data2.base2quote
+        uniWethPriceTmp = data1.quote2base
+        setUniUsdtPrice(uniUsdtPriceTmp)
+        setUniWethPrice(uniWethPrice)
+      } else {
+        uniUsdtPriceTmp = data1.quote2base
+        uniWethPriceTmp = 0
+        setUniUsdtPrice(uniUsdtPriceTmp)
+        setUniWethPrice(uniWethPriceTmp)
       }
 
       //get gateio prices
-      const gateioData = await Axios.get(
-        `/api/v4/spot/order_book?currency_pair=` +
-          this.props.coin.gatePair +
-          "&limit=1",
+      const gateioData = await axios.get(
+        `/api/v4/spot/order_book?currency_pair=` + coin.gatePair + "&limit=1",
         {
           headers: {
             "Access-Control-Allow-Origin": "*",
@@ -94,83 +57,73 @@ class Coin extends Component {
           },
         }
       )
-      if (this.cancelSetState) {
-        return
-      }
-
-      this.setState({
-        gateAskPrice: gateioData.data.asks[0][0],
-        gateBidPrice: gateioData.data.bids[0][0],
-        askDiff:
-          100 *
-          ((gateioData.data.asks[0][0] - this.state.uniUsdtPrice) /
-            this.state.uniUsdtPrice),
-        bidDiff:
-          100 *
-          ((gateioData.data.bids[0][0] - this.state.uniUsdtPrice) /
-            this.state.uniUsdtPrice),
-      })
+      const gateAskPriceTmp = gateioData.data.asks[0][0]
+      const gateBidPriceTmp = gateioData.data.bids[0][0]
+      const askDiffTmp =
+        100 * ((gateioData.data.asks[0][0] - uniUsdtPriceTmp) / uniUsdtPriceTmp)
+      const bidDiffTmp =
+        100 * ((gateioData.data.bids[0][0] - uniUsdtPriceTmp) / uniUsdtPriceTmp)
+      setGateAskPrice(gateAskPriceTmp)
+      setGateBidPrice(gateBidPriceTmp)
+      setAskDiff(askDiffTmp)
+      setBidDiff(bidDiffTmp)
 
       //compare prices
-      if (
-        this.state.bidDiff > this.props.coin.priceDifference &&
-        this.state.bidDiff !== Infinity
-      ) {
+      if (bidDiffTmp > coin.priceDifference && bidDiffTmp !== Infinity) {
         new Notification(
           "bid price of " +
-            this.props.coin.gatePair +
+            coin.gatePair +
             " is higher by " +
-            this.state.bidDiff.toFixed(2) +
+            bidDiffTmp.toFixed(2) +
             "%"
         )
       }
-      if (
-        this.state.askDiff < -this.props.coin.priceDifference &&
-        this.state.askDiff !== Infinity
-      ) {
+      if (askDiffTmp < -coin.priceDifference && askDiffTmp !== Infinity) {
         new Notification(
           "ask price of " +
-            this.props.coin.gatePair +
+            coin.gatePair +
             " is lower by " +
-            this.state.bidDiff.toFixed(2) +
+            bidDiffTmp.toFixed(2) +
             "%"
         )
       }
-    } catch {
-      console.log("error in timer")
+    } catch (e) {
+      console.log("error in timer", e)
     }
   }
 
-  render() {
-    return (
-      <div className="col-md-12 ">
-        <label>{this.props.coin.gatePair.toUpperCase()}</label>
-        <br />
-        <label>
-          <b>Uniswap</b> wethPrice: {this.state.uniWethPrice} &nbsp; usdtPrice:{" "}
-          {Number(this.state.uniUsdtPrice).toFixed(4)}
-        </label>
-        <br />
-        <label>
-          <b>Gate.io</b> askPrice: {this.state.gateAskPrice}{" "}
-          {this.state.askDiff.toFixed(2)}%
-        </label>
-        <br />
+  useEffect(() => {
+    const intervalId = setInterval(timer, coin.interval * 1000)
+    timer()
 
+    return clearInterval(intervalId)
+  }, [coin.interval, timer])
+
+  return (
+    <Grid item style={{ border: "1px solid red" }} padding={5}>
+      <Paper elevation={4} padding={5}>
+        <label>{coin.gatePair.toUpperCase()}</label>
+        <br />
         <label>
-          <b>Gate.io</b> bidPrice: {this.state.gateBidPrice}{" "}
-          {this.state.bidDiff.toFixed(2)}%
+          <b>Uniswap</b> wethPrice: {uniWethPrice} &nbsp; usdtPrice:{" "}
+          {Number(uniUsdtPrice).toFixed(4)}
+        </label>
+        <br />
+        <label>
+          <b>Gate.io</b> askPrice: {gateAskPrice} {askDiff.toFixed(2)}%
+        </label>
+        <br />
+        <label>
+          <b>Gate.io</b> bidPrice: {gateBidPrice} {bidDiff.toFixed(2)}%
         </label>
         <br />
         <button
           className="btn btn-primary"
-          onClick={() => this.props.handleDelete(this.props.coin.id)}
+          onClick={() => handleDelete(coin.id)}
         >
           Remove
         </button>
-      </div>
-    )
-  }
+      </Paper>
+    </Grid>
+  )
 }
-
-export default Coin
